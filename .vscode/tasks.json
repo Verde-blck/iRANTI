@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Metro: start",
+      "type": "npm",
+      "script": "start",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Metro: start with clean cache",
+      "type": "shell",
+      "command": "npx react-native start --reset-cache",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Android: run",
+      "type": "npm",
+      "script": "android",
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: install pods",
+      "type": "npm",
+      "script": "pods",
+      "problemMatcher": []
+    },
+    {
+      "label": "iOS: run",
+      "type": "npm",
+      "script": "ios",
+      "problemMatcher": []
+    },
+    {
+      "label": "Check: types",
+      "type": "npm",
+      "script": "typecheck",
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "Check: lint",
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": "$eslint-stylish"
+    },
+    {
+      "label": "Check: tests",
+      "type": "npm",
+      "script": "test",
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "Check: environment",
+      "type": "npm",
+      "script": "doctor",
+      "problemMatcher": []
+    }
+  ]
+}

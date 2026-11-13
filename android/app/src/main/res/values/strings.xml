@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">iRANTI</string>
+    <string name="iranti_channel_deep">Screen-waking reminders</string>
+    <string name="iranti_channel_deep_description">Wakes the screen and plays the alarm sound when a task is due.</string>
+    <string name="iranti_channel_standard">Standard reminders</string>
+    <string name="iranti_channel_standard_description">Regular notifications for tasks without deep alerts.</string>
+    <string name="iranti_action_snooze">Snooze 10 min</string>
+    <string name="iranti_action_dismiss">Dismiss</string>
+    <string name="iranti_gated_body">Deep alerts are paused. Tap to keep them on.</string>
+</resources>

@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "msjsdiag.vscode-react-native",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "orta.vscode-jest",
+    "fwcd.kotlin",
+    "swiftlang.swift-vscode"
+  ]
+}

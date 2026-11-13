@@ -1,0 +1,12 @@
+export const TRIAL_DAYS = 22;
+export const TRIAL_WINDOW_SECONDS = TRIAL_DAYS * 86400;
+export const TRIAL_WINDOW_MS = TRIAL_WINDOW_SECONDS * 1000;
+export const CLOCK_ROLLBACK_TOLERANCE_MS = 5 * 60 * 1000;
+export const PULSE_LEAD_MS = 15 * 60 * 1000;
+export const IOS_PENDING_LIMIT = 60;
+export const SNOOZE_MINUTES = 10;
+export const PREMIUM_SKU = 'iranti_premium_lifetime';
+export const VAULT_ID = 'iranti.vault';
+export const TITLE_LIMIT = 140;
+export const NOTES_LIMIT = 1000;
+export const MAX_TIMER_MS = 2_000_000_000;

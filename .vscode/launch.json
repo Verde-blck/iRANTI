@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Android (Hermes)",
+      "cwd": "${workspaceFolder}",
+      "type": "reactnativedirect",
+      "request": "launch",
+      "platform": "android"
+    },
+    {
+      "name": "Debug iOS (Hermes)",
+      "cwd": "${workspaceFolder}",
+      "type": "reactnativedirect",
+      "request": "launch",
+      "platform": "ios"
+    },
+    {
+      "name": "Attach to running app (Hermes)",
+      "cwd": "${workspaceFolder}",
+      "type": "reactnativedirect",
+      "request": "attach"
+    }
+  ]
+}

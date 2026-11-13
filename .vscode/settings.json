@@ -1,0 +1,43 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[kotlin]": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": false
+  },
+  "[swift]": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": false
+  },
+  "[xml]": {
+    "editor.formatOnSave": false
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "tailwindCSS.classAttributes": ["className", "contentContainerClassName"],
+  "tailwindCSS.experimental.classRegex": [
+    ["(?:SURFACE|LABEL|MARKER|SELECTED)[^=]*=\\s*\\{([\\s\\S]*?)\\};", "'([^']*)'"]
+  ],
+  "files.exclude": {
+    "**/.gradle": true,
+    "android/app/build": true,
+    "android/build": true,
+    "ios/build": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "ios/Pods": true,
+    "android/app/build": true,
+    "android/.gradle": true,
+    "package-lock.json": true
+  },
+  "jest.runMode": "on-demand",
+  "react-native-tools.showUserTips": false
+}
