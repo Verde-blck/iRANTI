@@ -59,6 +59,8 @@ react {
  */
 def enableProguardInReleaseBuilds = false
 
+def hasReleaseKey = ["IRANTI_UPLOAD_STORE_FILE", "IRANTI_UPLOAD_STORE_PASSWORD", "IRANTI_UPLOAD_KEY_ALIAS", "IRANTI_UPLOAD_KEY_PASSWORD"].every { project.hasProperty(it) }
+
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
  *
@@ -83,7 +85,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0.1"
+        versionName "1.0.5"
         missingDimensionStrategy "store", "play"
     }
     signingConfigs {
@@ -93,15 +95,21 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        if (hasReleaseKey) {
+            release {
+                storeFile file(IRANTI_UPLOAD_STORE_FILE)
+                storePassword IRANTI_UPLOAD_STORE_PASSWORD
+                keyAlias IRANTI_UPLOAD_KEY_ALIAS
+                keyPassword IRANTI_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig hasReleaseKey ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

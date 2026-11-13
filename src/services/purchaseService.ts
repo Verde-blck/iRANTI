@@ -1,12 +1,9 @@
-import { Platform } from 'react-native';
 import {
   ErrorCode,
-  PurchaseStateAndroid,
   endConnection,
+  fetchProducts,
   finishTransaction,
-  flushFailedPurchasesCachedAsPendingAndroid,
   getAvailablePurchases,
-  getProducts,
   initConnection,
   purchaseErrorListener,
   purchaseUpdatedListener,
@@ -46,11 +43,7 @@ let connected = false;
 let subscriptions: Array<{ remove: () => void }> = [];
 
 function priceOf(product: Product): string | null {
-  const shaped = product as Product & {
-    localizedPrice?: string;
-    oneTimePurchaseOfferDetails?: { formattedPrice?: string };
-  };
-  return shaped.localizedPrice ?? shaped.oneTimePurchaseOfferDetails?.formattedPrice ?? null;
+  return product.displayPrice || null;
 }
 
 function messageOf(error: unknown): string {
@@ -58,17 +51,16 @@ function messageOf(error: unknown): string {
 }
 
 function transactionOf(purchase: Purchase): string {
-  return purchase.transactionId ?? purchase.purchaseToken ?? 'unknown';
+  const transactionId = 'transactionId' in purchase ? purchase.transactionId : null;
+  return transactionId || purchase.purchaseToken || purchase.id;
+}
+
+function ownsPremium(purchase: Purchase): boolean {
+  return purchase.productId === PREMIUM_SKU && purchase.purchaseState === 'purchased';
 }
 
 async function handlePurchase(purchase: Purchase): Promise<void> {
-  if (purchase.productId !== PREMIUM_SKU) {
-    return;
-  }
-  if (
-    Platform.OS === 'android' &&
-    purchase.purchaseStateAndroid !== PurchaseStateAndroid.PURCHASED
-  ) {
+  if (!ownsPremium(purchase)) {
     return;
   }
   await recordPremium(purchase.productId, transactionOf(purchase));
@@ -79,7 +71,7 @@ async function handlePurchase(purchase: Purchase): Promise<void> {
 }
 
 function handleError(error: PurchaseError): void {
-  if (error.code === ErrorCode.E_USER_CANCELLED) {
+  if (error.code === ErrorCode.UserCancelled) {
     purchaseStore.set(state => ({ ...state, phase: 'ready', error: null }));
     return;
   }
@@ -92,7 +84,7 @@ function handleError(error: PurchaseError): void {
 
 async function syncOwned(closeOnFound: boolean): Promise<boolean> {
   const owned = await getAvailablePurchases();
-  const match = owned.find(purchase => purchase.productId === PREMIUM_SKU);
+  const match = owned.find(ownsPremium);
   if (!match) {
     return false;
   }
@@ -112,9 +104,6 @@ export async function initPurchases(): Promise<void> {
   try {
     await initConnection();
     connected = true;
-    if (Platform.OS === 'android') {
-      await flushFailedPurchasesCachedAsPendingAndroid().catch(() => undefined);
-    }
     subscriptions = [
       purchaseUpdatedListener(purchase => {
         handlePurchase(purchase).catch(error =>
@@ -123,16 +112,14 @@ export async function initPurchases(): Promise<void> {
       }),
       purchaseErrorListener(handleError),
     ];
-    const products = await getProducts({ skus: [PREMIUM_SKU] });
-    const product = products.find(item => item.productId === PREMIUM_SKU);
+    const products = (await fetchProducts({ skus: [PREMIUM_SKU], type: 'in-app' })) ?? [];
+    const product = (products as Product[]).find(item => item.id === PREMIUM_SKU);
     purchaseStore.set({
       phase: product ? 'ready' : 'unavailable',
       price: product ? priceOf(product) : null,
       error: null,
     });
-    if (Platform.OS === 'android') {
-      await syncOwned(false).catch(() => false);
-    }
+    await syncOwned(false).catch(() => false);
   } catch (error) {
     purchaseStore.set({ phase: 'unavailable', price: null, error: messageOf(error) });
   }
@@ -147,11 +134,10 @@ export async function buyPremium(): Promise<void> {
   }
   purchaseStore.set(state => ({ ...state, phase: 'purchasing', error: null }));
   try {
-    await requestPurchase(
-      Platform.OS === 'ios'
-        ? { sku: PREMIUM_SKU, andDangerouslyFinishTransactionAutomaticallyIOS: false }
-        : { skus: [PREMIUM_SKU] },
-    );
+    await requestPurchase({
+      request: { apple: { sku: PREMIUM_SKU }, google: { skus: [PREMIUM_SKU] } },
+      type: 'in-app',
+    });
   } catch (error) {
     handleError(error as PurchaseError);
   }
