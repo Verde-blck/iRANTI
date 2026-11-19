@@ -1,4 +1,4 @@
-import { NOTES_LIMIT, TITLE_LIMIT } from '../config/constants';
+import { INBOX_LIST_ID, NOTES_LIMIT, SUBTASK_LIMIT, TITLE_LIMIT } from '../config/constants';
 import { createStore } from '../core/store';
 import { StorageKeys } from '../storage/keys';
 import { readJson, writeJson } from '../storage/vault';
@@ -6,6 +6,7 @@ import {
   PRIORITIES,
   type DeliveryMode,
   type Priority,
+  type Subtask,
   type Task,
   type TaskDraft,
   type TaskPatch,
@@ -50,6 +51,33 @@ function isTask(value: unknown): value is Task {
   );
 }
 
+export function cleanSubtasks(value: unknown): Subtask[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const seen = new Set<string>();
+  const result: Subtask[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
+    const candidate = item as Record<string, unknown>;
+    const title =
+      typeof candidate.title === 'string' ? candidate.title.trim().slice(0, TITLE_LIMIT) : '';
+    if (!title) {
+      continue;
+    }
+    const id =
+      typeof candidate.id === 'string' && !seen.has(candidate.id) ? candidate.id : createId();
+    seen.add(id);
+    result.push({ id, title, done: candidate.done === true });
+    if (result.length >= SUBTASK_LIMIT) {
+      break;
+    }
+  }
+  return result;
+}
+
 function normalise(task: Task): Task {
   return {
     id: task.id,
@@ -62,6 +90,8 @@ function normalise(task: Task): Task {
     createdAt: task.createdAt,
     updatedAt: typeof task.updatedAt === 'number' ? task.updatedAt : task.createdAt,
     delivery: task.delivery === 'deep' || task.delivery === 'standard' ? task.delivery : null,
+    listId: typeof task.listId === 'string' && task.listId ? task.listId : INBOX_LIST_ID,
+    subtasks: cleanSubtasks(task.subtasks),
   };
 }
 
@@ -118,6 +148,8 @@ export function insertTask(draft: TaskDraft): Task {
     createdAt: now,
     updatedAt: now,
     delivery: null,
+    listId: draft.listId || INBOX_LIST_ID,
+    subtasks: cleanSubtasks(draft.subtasks),
   };
   commit([task, ...taskStore.get()]);
   return task;
@@ -136,6 +168,8 @@ export function patchTask(id: string, patch: TaskPatch): Task | null {
     notes: patch.notes !== undefined ? cleanNotes(patch.notes) : current.notes,
     priority: patch.priority ?? current.priority,
     remindAt: reminderChanged ? cleanReminder(patch.remindAt, now) : current.remindAt,
+    listId: patch.listId || current.listId,
+    subtasks: patch.subtasks !== undefined ? cleanSubtasks(patch.subtasks) : current.subtasks,
     updatedAt: now,
   };
   commit(taskStore.get().map(task => (task.id === id ? next : task)));
@@ -154,6 +188,36 @@ export function markCompleted(id: string, completed: boolean): Task | null {
   const next: Task = { ...current, completed, completedAt: completed ? now : null, updatedAt: now };
   commit(taskStore.get().map(task => (task.id === id ? next : task)));
   return next;
+}
+
+export function toggleSubtaskRecord(taskId: string, subtaskId: string): Task | null {
+  const current = findTask(taskId);
+  if (!current) {
+    return null;
+  }
+  const next: Task = {
+    ...current,
+    subtasks: current.subtasks.map(subtask =>
+      subtask.id === subtaskId ? { ...subtask, done: !subtask.done } : subtask,
+    ),
+    updatedAt: Date.now(),
+  };
+  commit(taskStore.get().map(task => (task.id === taskId ? next : task)));
+  return next;
+}
+
+export function reassignList(fromListId: string, toListId: string): void {
+  if (!taskStore.get().some(task => task.listId === fromListId)) {
+    return;
+  }
+  const now = Date.now();
+  commit(
+    taskStore
+      .get()
+      .map(task =>
+        task.listId === fromListId ? { ...task, listId: toListId, updatedAt: now } : task,
+      ),
+  );
 }
 
 export function applyDeliveries(changes: Map<string, DeliveryMode | null>): void {
@@ -178,13 +242,15 @@ export function removeTaskRecord(id: string): void {
   commit(taskStore.get().filter(task => task.id !== id));
 }
 
-export function removeCompletedRecords(): string[] {
+export function removeCompletedRecords(onlyIds?: readonly string[]): string[] {
+  const scope = onlyIds ? new Set(onlyIds) : null;
+  const removable = (task: Task) => task.completed && (scope === null || scope.has(task.id));
   const removed = taskStore
     .get()
-    .filter(task => task.completed)
+    .filter(removable)
     .map(task => task.id);
   if (removed.length > 0) {
-    commit(taskStore.get().filter(task => !task.completed));
+    commit(taskStore.get().filter(task => !removable(task)));
   }
   return removed;
 }

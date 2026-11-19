@@ -1,6 +1,7 @@
 import { evaluateLicense } from '../services/licenseEngine';
 import { initPurchases } from '../services/purchaseService';
 import { refreshCapabilities, resyncAll } from '../services/reminderEngine';
+import { ensureListsHydrated } from '../services/listRepository';
 import { ensureTasksHydrated } from '../services/taskRepository';
 import { openVault } from '../storage/vault';
 
@@ -10,6 +11,7 @@ export function ensureCore(): Promise<void> {
   if (!core) {
     core = (async () => {
       await openVault();
+      ensureListsHydrated();
       ensureTasksHydrated();
       await evaluateLicense();
     })().catch(error => {

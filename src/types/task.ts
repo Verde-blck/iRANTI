@@ -2,6 +2,12 @@ export type Priority = 'low' | 'normal' | 'high' | 'critical';
 
 export type DeliveryMode = 'deep' | 'standard';
 
+export interface Subtask {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -13,6 +19,8 @@ export interface Task {
   createdAt: number;
   updatedAt: number;
   delivery: DeliveryMode | null;
+  listId: string;
+  subtasks: Subtask[];
 }
 
 export interface TaskDraft {
@@ -20,8 +28,12 @@ export interface TaskDraft {
   notes?: string;
   priority?: Priority;
   remindAt?: number | null;
+  listId?: string;
+  subtasks?: Subtask[];
 }
 
-export type TaskPatch = Partial<Pick<Task, 'title' | 'notes' | 'priority' | 'remindAt'>>;
+export type TaskPatch = Partial<
+  Pick<Task, 'title' | 'notes' | 'priority' | 'remindAt' | 'listId' | 'subtasks'>
+>;
 
 export const PRIORITIES: readonly Priority[] = ['low', 'normal', 'high', 'critical'];

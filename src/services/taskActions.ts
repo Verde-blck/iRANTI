@@ -1,4 +1,6 @@
+import { INBOX_LIST_ID } from '../config/constants';
 import type { Task, TaskDraft, TaskPatch } from '../types/task';
+import { findList } from './listRepository';
 import { cancelTaskReminder, scheduleTask } from './reminderEngine';
 import {
   findTask,
@@ -7,6 +9,7 @@ import {
   patchTask,
   removeCompletedRecords,
   removeTaskRecord,
+  toggleSubtaskRecord,
 } from './taskRepository';
 
 const SCHEDULING_FIELDS: ReadonlyArray<keyof TaskPatch> = [
@@ -16,14 +19,21 @@ const SCHEDULING_FIELDS: ReadonlyArray<keyof TaskPatch> = [
   'remindAt',
 ];
 
+function resolveListId(listId: string | undefined): string | undefined {
+  if (listId === undefined) {
+    return undefined;
+  }
+  return findList(listId) ? listId : INBOX_LIST_ID;
+}
+
 export async function createTask(draft: TaskDraft): Promise<Task> {
-  const task = insertTask(draft);
+  const task = insertTask({ ...draft, listId: resolveListId(draft.listId) });
   await scheduleTask(task, 'configure');
   return findTask(task.id) ?? task;
 }
 
 export async function editTask(id: string, patch: TaskPatch): Promise<Task | null> {
-  const task = patchTask(id, patch);
+  const task = patchTask(id, { ...patch, listId: resolveListId(patch.listId) });
   if (!task) {
     return null;
   }
@@ -56,7 +66,11 @@ export async function deleteTask(id: string): Promise<void> {
   removeTaskRecord(id);
 }
 
-export async function clearCompleted(): Promise<void> {
-  const removed = removeCompletedRecords();
+export async function clearCompleted(onlyIds?: readonly string[]): Promise<void> {
+  const removed = removeCompletedRecords(onlyIds);
   await Promise.all(removed.map(id => cancelTaskReminder(id)));
+}
+
+export function toggleSubtask(taskId: string, subtaskId: string): Task | null {
+  return toggleSubtaskRecord(taskId, subtaskId);
 }

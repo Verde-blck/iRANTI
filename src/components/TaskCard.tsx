@@ -5,6 +5,7 @@ import { usePulse } from '../hooks/usePulse';
 import { strings } from '../i18n/strings';
 import { glow } from '../theme/glow';
 import type { Priority, Task } from '../types/task';
+import { subtaskProgress } from '../utils/taskFilters';
 import { isApproaching, isOverdue } from '../utils/taskOrder';
 import { formatWhen } from '../utils/time';
 import { DeliveryTag } from './DeliveryTag';
@@ -12,6 +13,7 @@ import { DeliveryTag } from './DeliveryTag';
 interface TaskCardProps {
   task: Task;
   now: number;
+  listName?: string | null;
   onOpen: (task: Task) => void;
   onToggle: (task: Task) => void;
 }
@@ -37,11 +39,13 @@ function describe(task: Task, now: number): string {
     : formatWhen(task.remindAt, now);
 }
 
-function TaskCardView({ task, now, onOpen, onToggle }: TaskCardProps) {
+function TaskCardView({ task, now, listName = null, onOpen, onToggle }: TaskCardProps) {
   const approaching = isApproaching(task, now);
   const overdue = isOverdue(task, now);
   const { haloStyle, coreStyle } = usePulse(approaching);
   const meta = describe(task, now);
+  const progress = subtaskProgress(task.subtasks);
+  const steps = progress.total > 0 ? strings.task.steps(progress.done, progress.total) : null;
 
   return (
     <View className="mb-3">
@@ -72,7 +76,9 @@ function TaskCardView({ task, now, onOpen, onToggle }: TaskCardProps) {
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${task.title}, ${strings.priority[task.priority]}, ${meta}`}
+            accessibilityLabel={[task.title, strings.priority[task.priority], meta, steps, listName]
+              .filter(Boolean)
+              .join(', ')}
             onPress={() => onOpen(task)}
             className="flex-1 py-3.5 pr-4 active:opacity-70">
             <Text
@@ -91,6 +97,19 @@ function TaskCardView({ task, now, onOpen, onToggle }: TaskCardProps) {
               <Text className={`text-[13px] ${overdue ? 'text-flare' : 'text-mist'}`}>{meta}</Text>
               {!task.completed && task.remindAt !== null && !overdue ? (
                 <DeliveryTag mode={task.delivery} />
+              ) : null}
+              {steps ? (
+                <Text
+                  className={`text-[13px] ${
+                    progress.done === progress.total ? 'text-[#00FF66]' : 'text-mist'
+                  }`}>
+                  {steps}
+                </Text>
+              ) : null}
+              {listName ? (
+                <View className="rounded-md border border-radon-25 px-2 py-0.5">
+                  <Text className="text-[11px] font-medium text-mist">{listName}</Text>
+                </View>
               ) : null}
             </View>
           </Pressable>

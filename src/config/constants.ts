@@ -10,3 +10,7 @@ export const VAULT_ID = 'iranti.vault';
 export const TITLE_LIMIT = 140;
 export const NOTES_LIMIT = 1000;
 export const MAX_TIMER_MS = 2_000_000_000;
+export const SUBTASK_LIMIT = 50;
+export const LIST_NAME_LIMIT = 40;
+export const LIST_LIMIT = 30;
+export const INBOX_LIST_ID = 'inbox';

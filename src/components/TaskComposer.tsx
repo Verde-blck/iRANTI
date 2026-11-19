@@ -9,11 +9,15 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { INBOX_LIST_ID, NOTES_LIMIT, TITLE_LIMIT } from '../config/constants';
+import { useLists } from '../hooks/useLists';
 import { useTasks } from '../hooks/useTasks';
 import { strings } from '../i18n/strings';
 import { isTaskValidationError } from '../services/taskRepository';
 import { palette } from '../theme/palette';
-import type { Priority, Task, TaskPatch } from '../types/task';
+import type { Priority, Subtask, Task, TaskPatch } from '../types/task';
+import { ChecklistEditor } from './ChecklistEditor';
+import { ListPicker } from './ListPicker';
 import { NeonButton } from './NeonButton';
 import { PriorityPicker } from './PriorityPicker';
 import { ReminderPicker } from './ReminderPicker';
@@ -21,6 +25,7 @@ import { ReminderPicker } from './ReminderPicker';
 interface TaskComposerProps {
   visible: boolean;
   task: Task | null;
+  defaultListId: string;
   onClose: () => void;
 }
 
@@ -33,13 +38,26 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function TaskComposer({ visible, task, onClose }: TaskComposerProps) {
+function sameSubtasks(a: readonly Subtask[], b: readonly Subtask[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every(
+      (step, index) =>
+        step.id === b[index].id && step.title === b[index].title && step.done === b[index].done,
+    )
+  );
+}
+
+export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComposerProps) {
   const insets = useSafeAreaInsets();
   const { create, update, remove } = useTasks();
+  const { lists, find: findList } = useLists();
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Priority>('normal');
   const [remindAt, setRemindAt] = useState<number | null>(null);
+  const [listId, setListId] = useState(INBOX_LIST_ID);
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [focused, setFocused] = useState<'title' | 'notes' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<'save' | 'delete' | null>(null);
@@ -48,13 +66,16 @@ export function TaskComposer({ visible, task, onClose }: TaskComposerProps) {
     if (!visible) {
       return;
     }
+    const initialList = task?.listId ?? defaultListId;
     setTitle(task?.title ?? '');
     setNotes(task?.notes ?? '');
     setPriority(task?.priority ?? 'normal');
     setRemindAt(task?.remindAt ?? null);
+    setListId(findList(initialList) ? initialList : INBOX_LIST_ID);
+    setSubtasks(task?.subtasks ?? []);
     setError(null);
     setBusy(null);
-  }, [visible, task]);
+  }, [visible, task, defaultListId, findList]);
 
   const submit = async () => {
     setBusy('save');
@@ -74,9 +95,15 @@ export function TaskComposer({ visible, task, onClose }: TaskComposerProps) {
         if (remindAt !== task.remindAt) {
           patch.remindAt = remindAt;
         }
+        if (listId !== task.listId) {
+          patch.listId = listId;
+        }
+        if (!sameSubtasks(subtasks, task.subtasks)) {
+          patch.subtasks = subtasks;
+        }
         await update(task.id, patch);
       } else {
-        await create({ title, notes, priority, remindAt });
+        await create({ title, notes, priority, remindAt, listId, subtasks });
       }
       onClose();
     } catch (cause) {
@@ -139,7 +166,7 @@ export function TaskComposer({ visible, task, onClose }: TaskComposerProps) {
                 selectionColor={palette.radon}
                 cursorColor={palette.radon}
                 autoFocus={!task}
-                maxLength={140}
+                maxLength={TITLE_LIMIT}
                 returnKeyType="next"
                 onFocus={() => setFocused('title')}
                 onBlur={() => setFocused(null)}
@@ -156,12 +183,20 @@ export function TaskComposer({ visible, task, onClose }: TaskComposerProps) {
                 selectionColor={palette.radon}
                 cursorColor={palette.radon}
                 multiline
-                maxLength={1000}
+                maxLength={NOTES_LIMIT}
                 textAlignVertical="top"
                 onFocus={() => setFocused('notes')}
                 onBlur={() => setFocused(null)}
                 className={`min-h-[88px] py-3 ${inputClass('notes')}`}
               />
+            </Field>
+
+            <Field label={strings.composer.checklistLabel}>
+              <ChecklistEditor value={subtasks} onChange={setSubtasks} />
+            </Field>
+
+            <Field label={strings.composer.listLabel}>
+              <ListPicker lists={lists} value={listId} onChange={setListId} />
             </Field>
 
             <Field label={strings.composer.priorityLabel}>

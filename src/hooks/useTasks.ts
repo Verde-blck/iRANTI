@@ -6,6 +6,7 @@ import {
   deleteTask,
   editTask,
   setTaskCompleted,
+  toggleSubtask,
   toggleTask,
 } from '../services/taskActions';
 import { findTask, taskStore } from '../services/taskRepository';
@@ -26,6 +27,7 @@ export function useTasks() {
       create: createTask,
       update: editTask,
       toggle: toggleTask,
+      toggleSubtask,
       setCompleted: setTaskCompleted,
       remove: deleteTask,
       clearCompleted,
