@@ -15,6 +15,7 @@ function task(overrides: Partial<Task>): Task {
     delivery: null,
     listId: 'inbox',
     subtasks: [],
+    repeat: null,
     ...overrides,
   };
 }

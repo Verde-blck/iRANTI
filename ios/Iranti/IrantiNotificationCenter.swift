@@ -12,6 +12,41 @@ enum AlarmContent {
     return UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
   }
 
+  static let weekdayNumbers = [2, 3, 4, 5, 6]
+
+  static func weekdayIdentifier(_ id: String, _ weekday: Int) -> String {
+    "\(id)#wd\(weekday)"
+  }
+
+  static func identifiers(for id: String) -> [String] {
+    [id] + weekdayNumbers.map { weekdayIdentifier(id, $0) }
+  }
+
+  static func triggers(id: String, fireAt: Date, repeatKind: String?, anchor: Date) -> [(String, UNNotificationTrigger)] {
+    let calendar = Calendar.current
+    let time = calendar.dateComponents([.hour, .minute], from: anchor)
+    switch repeatKind {
+    case "daily":
+      return [(id, UNCalendarNotificationTrigger(dateMatching: time, repeats: true))]
+    case "weekly":
+      var components = time
+      components.weekday = calendar.component(.weekday, from: anchor)
+      return [(id, UNCalendarNotificationTrigger(dateMatching: components, repeats: true))]
+    case "monthly":
+      var components = time
+      components.day = calendar.component(.day, from: anchor)
+      return [(id, UNCalendarNotificationTrigger(dateMatching: components, repeats: true))]
+    case "weekdays":
+      return weekdayNumbers.map { weekday in
+        var components = time
+        components.weekday = weekday
+        return (weekdayIdentifier(id, weekday), UNCalendarNotificationTrigger(dateMatching: components, repeats: true))
+      }
+    default:
+      return [(id, calendarTrigger(for: fireAt))]
+    }
+  }
+
   static func request(
     identifier: String,
     taskId: String,

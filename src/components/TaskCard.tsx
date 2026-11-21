@@ -76,7 +76,14 @@ function TaskCardView({ task, now, listName = null, onOpen, onToggle }: TaskCard
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={[task.title, strings.priority[task.priority], meta, steps, listName]
+            accessibilityLabel={[
+              task.title,
+              strings.priority[task.priority],
+              meta,
+              task.repeat ? strings.task.repeats[task.repeat.kind] : null,
+              steps,
+              listName,
+            ]
               .filter(Boolean)
               .join(', ')}
             onPress={() => onOpen(task)}
@@ -97,6 +104,13 @@ function TaskCardView({ task, now, listName = null, onOpen, onToggle }: TaskCard
               <Text className={`text-[13px] ${overdue ? 'text-flare' : 'text-mist'}`}>{meta}</Text>
               {!task.completed && task.remindAt !== null && !overdue ? (
                 <DeliveryTag mode={task.delivery} />
+              ) : null}
+              {task.repeat && !task.completed ? (
+                <View className="rounded-md border border-radon-40 px-2 py-0.5">
+                  <Text className="text-[11px] font-medium text-[#00FF66]">
+                    {strings.task.repeats[task.repeat.kind]}
+                  </Text>
+                </View>
               ) : null}
               {steps ? (
                 <Text

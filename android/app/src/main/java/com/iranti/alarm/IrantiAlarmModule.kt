@@ -52,6 +52,13 @@ class IrantiAlarmModule(private val reactContext: ReactApplicationContext) : Rea
           fireAt = payload.getDouble("fireAt").toLong(),
           priority = payload.getString("priority") ?: "normal",
           deepWake = payload.hasKey("deepWake") && payload.getBoolean("deepWake"),
+          repeat = if (payload.hasKey("repeat") && !payload.isNull("repeat")) payload.getString("repeat") else null,
+          repeatAnchor =
+            if (payload.hasKey("repeatAnchor") && !payload.isNull("repeatAnchor")) {
+              payload.getDouble("repeatAnchor").toLong()
+            } else {
+              0L
+            },
         )
       scheduler.schedule(record)
       promise.resolve(null)

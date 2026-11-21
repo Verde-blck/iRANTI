@@ -2,6 +2,15 @@ export type Priority = 'low' | 'normal' | 'high' | 'critical';
 
 export type DeliveryMode = 'deep' | 'standard';
 
+export type RepeatKind = 'daily' | 'weekdays' | 'weekly' | 'monthly';
+
+export interface Repeat {
+  kind: RepeatKind;
+  anchor: number;
+}
+
+export const REPEAT_KINDS: readonly RepeatKind[] = ['daily', 'weekdays', 'weekly', 'monthly'];
+
 export interface Subtask {
   id: string;
   title: string;
@@ -21,6 +30,7 @@ export interface Task {
   delivery: DeliveryMode | null;
   listId: string;
   subtasks: Subtask[];
+  repeat: Repeat | null;
 }
 
 export interface TaskDraft {
@@ -30,10 +40,11 @@ export interface TaskDraft {
   remindAt?: number | null;
   listId?: string;
   subtasks?: Subtask[];
+  repeat?: Repeat | null;
 }
 
 export type TaskPatch = Partial<
-  Pick<Task, 'title' | 'notes' | 'priority' | 'remindAt' | 'listId' | 'subtasks'>
+  Pick<Task, 'title' | 'notes' | 'priority' | 'remindAt' | 'listId' | 'subtasks' | 'repeat'>
 >;
 
 export const PRIORITIES: readonly Priority[] = ['low', 'normal', 'high', 'critical'];

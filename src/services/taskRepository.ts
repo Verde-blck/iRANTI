@@ -4,14 +4,18 @@ import { StorageKeys } from '../storage/keys';
 import { readJson, writeJson } from '../storage/vault';
 import {
   PRIORITIES,
+  REPEAT_KINDS,
   type DeliveryMode,
   type Priority,
+  type Repeat,
+  type RepeatKind,
   type Subtask,
   type Task,
   type TaskDraft,
   type TaskPatch,
 } from '../types/task';
 import { createId } from '../utils/id';
+import { nextOccurrence } from '../utils/recurrence';
 
 export type TaskValidationCode = 'title_required' | 'reminder_in_past';
 
@@ -78,13 +82,29 @@ export function cleanSubtasks(value: unknown): Subtask[] {
   return result;
 }
 
+export function cleanRepeat(value: unknown, remindAt: number | null): Repeat | null {
+  if (remindAt === null || !value || typeof value !== 'object') {
+    return null;
+  }
+  const candidate = value as Record<string, unknown>;
+  if (!REPEAT_KINDS.includes(candidate.kind as RepeatKind)) {
+    return null;
+  }
+  const anchor =
+    typeof candidate.anchor === 'number' && Number.isFinite(candidate.anchor)
+      ? candidate.anchor
+      : remindAt;
+  return { kind: candidate.kind as RepeatKind, anchor };
+}
+
 function normalise(task: Task): Task {
+  const remindAt = typeof task.remindAt === 'number' ? task.remindAt : null;
   return {
     id: task.id,
     title: task.title,
     notes: typeof task.notes === 'string' ? task.notes : '',
     priority: task.priority,
-    remindAt: typeof task.remindAt === 'number' ? task.remindAt : null,
+    remindAt,
     completed: task.completed === true,
     completedAt: typeof task.completedAt === 'number' ? task.completedAt : null,
     createdAt: task.createdAt,
@@ -92,6 +112,7 @@ function normalise(task: Task): Task {
     delivery: task.delivery === 'deep' || task.delivery === 'standard' ? task.delivery : null,
     listId: typeof task.listId === 'string' && task.listId ? task.listId : INBOX_LIST_ID,
     subtasks: cleanSubtasks(task.subtasks),
+    repeat: cleanRepeat(task.repeat, remindAt),
   };
 }
 
@@ -137,12 +158,13 @@ export function findTask(id: string): Task | undefined {
 
 export function insertTask(draft: TaskDraft): Task {
   const now = Date.now();
+  const remindAt = cleanReminder(draft.remindAt, now);
   const task: Task = {
     id: createId(),
     title: cleanTitle(draft.title),
     notes: cleanNotes(draft.notes),
     priority: draft.priority ?? 'normal',
-    remindAt: cleanReminder(draft.remindAt, now),
+    remindAt,
     completed: false,
     completedAt: null,
     createdAt: now,
@@ -150,6 +172,7 @@ export function insertTask(draft: TaskDraft): Task {
     delivery: null,
     listId: draft.listId || INBOX_LIST_ID,
     subtasks: cleanSubtasks(draft.subtasks),
+    repeat: cleanRepeat(draft.repeat, remindAt),
   };
   commit([task, ...taskStore.get()]);
   return task;
@@ -162,14 +185,17 @@ export function patchTask(id: string, patch: TaskPatch): Task | null {
   }
   const now = Date.now();
   const reminderChanged = patch.remindAt !== undefined && patch.remindAt !== current.remindAt;
+  const remindAt = reminderChanged ? cleanReminder(patch.remindAt, now) : current.remindAt;
+  const repeatSource = patch.repeat !== undefined ? patch.repeat : current.repeat;
   const next: Task = {
     ...current,
     title: patch.title !== undefined ? cleanTitle(patch.title) : current.title,
     notes: patch.notes !== undefined ? cleanNotes(patch.notes) : current.notes,
     priority: patch.priority ?? current.priority,
-    remindAt: reminderChanged ? cleanReminder(patch.remindAt, now) : current.remindAt,
+    remindAt,
     listId: patch.listId || current.listId,
     subtasks: patch.subtasks !== undefined ? cleanSubtasks(patch.subtasks) : current.subtasks,
+    repeat: cleanRepeat(repeatSource, remindAt),
     updatedAt: now,
   };
   commit(taskStore.get().map(task => (task.id === id ? next : task)));
@@ -188,6 +214,46 @@ export function markCompleted(id: string, completed: boolean): Task | null {
   const next: Task = { ...current, completed, completedAt: completed ? now : null, updatedAt: now };
   commit(taskStore.get().map(task => (task.id === id ? next : task)));
   return next;
+}
+
+export function advanceRepeat(id: string, after: number): Task | null {
+  const current = findTask(id);
+  if (!current || !current.repeat || current.remindAt === null) {
+    return null;
+  }
+  const next: Task = {
+    ...current,
+    remindAt: nextOccurrence(current.repeat, Math.max(after, current.remindAt)),
+    completed: false,
+    completedAt: null,
+    delivery: null,
+    subtasks: current.subtasks.map(step => ({ ...step, done: false })),
+    updatedAt: Date.now(),
+  };
+  commit(taskStore.get().map(task => (task.id === id ? next : task)));
+  return next;
+}
+
+export function advanceOverdueRepeats(now: number): string[] {
+  const due = taskStore
+    .get()
+    .filter(
+      task => task.repeat && !task.completed && task.remindAt !== null && task.remindAt <= now,
+    );
+  if (due.length === 0) {
+    return [];
+  }
+  const ids = new Set(due.map(task => task.id));
+  commit(
+    taskStore
+      .get()
+      .map(task =>
+        ids.has(task.id) && task.repeat
+          ? { ...task, remindAt: nextOccurrence(task.repeat, now), delivery: null, updatedAt: now }
+          : task,
+      ),
+  );
+  return [...ids];
 }
 
 export function toggleSubtaskRecord(taskId: string, subtaskId: string): Task | null {

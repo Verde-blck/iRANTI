@@ -1,5 +1,5 @@
 import { TRIAL_DAYS } from '../config/constants';
-import type { Priority } from '../types/task';
+import type { Priority, RepeatKind } from '../types/task';
 
 const en = {
   brand: 'iRANTI',
@@ -79,6 +79,12 @@ const en = {
     markComplete: 'Mark complete',
     markIncomplete: 'Mark incomplete',
     steps: (done: number, total: number) => `${done}/${total} steps`,
+    repeats: {
+      daily: 'Repeats daily',
+      weekdays: 'Repeats on weekdays',
+      weekly: 'Repeats weekly',
+      monthly: 'Repeats monthly',
+    } as Record<RepeatKind, string>,
   },
   priority: {
     low: 'Low',
@@ -111,6 +117,17 @@ const en = {
       reminder_in_past: 'Pick a reminder time in the future.',
       generic: 'The task did not save. Try again.',
     },
+  },
+  repeat: {
+    label: 'Repeat',
+    never: 'Never',
+    options: {
+      daily: 'Every day',
+      weekdays: 'Weekdays',
+      weekly: 'Every week',
+      monthly: 'Every month',
+    } as Record<RepeatKind, string>,
+    hint: 'Marking a repeating task complete moves it to the next time.',
   },
   reminder: {
     none: 'None',

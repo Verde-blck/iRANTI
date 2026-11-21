@@ -10,7 +10,9 @@ class AlarmReceiver : BroadcastReceiver() {
     if (intent.action != AlarmContract.ACTION_FIRE) return
     val id = intent.getStringExtra(AlarmContract.EXTRA_ID) ?: return
     val appContext = context.applicationContext
-    val record = AlarmScheduler(appContext).consume(id) ?: return
+    val scheduler = AlarmScheduler(appContext)
+    val record = scheduler.consume(id) ?: return
+    scheduler.scheduleNextOccurrence(record)
     val notifier = AlarmNotifier(appContext)
     if (EntitlementStore(appContext).allowsDeepWake(System.currentTimeMillis())) {
       WakeLocks.acquire(appContext)

@@ -62,21 +62,39 @@ final class IrantiAlarm: RCTEventEmitter {
     let priority = payload["priority"] as? String ?? "normal"
     let deepWake = (payload["deepWake"] as? Bool) ?? false
     let date = Date(timeIntervalSince1970: fireAt / 1000)
+    let repeatKind = payload["repeat"] as? String
+    let anchor = (payload["repeatAnchor"] as? NSNumber).map { Date(timeIntervalSince1970: $0.doubleValue / 1000) } ?? date
+    let triggers = AlarmContent.triggers(id: id, fireAt: date, repeatKind: repeatKind, anchor: anchor)
     let center = UNUserNotificationCenter.current()
+    center.removePendingNotificationRequests(withIdentifiers: AlarmContent.identifiers(for: id))
     center.getNotificationSettings { settings in
-      let request = AlarmContent.request(
-        identifier: id,
-        taskId: id,
-        title: title,
-        body: body,
-        priority: priority,
-        deepWake: deepWake,
-        critical: settings.criticalAlertSetting == .enabled,
-        trigger: AlarmContent.calendarTrigger(for: date)
-      )
-      center.add(request) { error in
-        if let error {
-          reject("E_SCHEDULE", error.localizedDescription, error)
+      let group = DispatchGroup()
+      let lock = NSLock()
+      var firstError: Error?
+      for (identifier, trigger) in triggers {
+        let request = AlarmContent.request(
+          identifier: identifier,
+          taskId: id,
+          title: title,
+          body: body,
+          priority: priority,
+          deepWake: deepWake,
+          critical: settings.criticalAlertSetting == .enabled,
+          trigger: trigger
+        )
+        group.enter()
+        center.add(request) { error in
+          if let error {
+            lock.lock()
+            if firstError == nil { firstError = error }
+            lock.unlock()
+          }
+          group.leave()
+        }
+      }
+      group.notify(queue: .main) {
+        if let firstError {
+          reject("E_SCHEDULE", firstError.localizedDescription, firstError)
         } else {
           resolve(nil)
         }
@@ -86,7 +104,7 @@ final class IrantiAlarm: RCTEventEmitter {
 
   @objc(cancel:resolver:rejecter:)
   func cancel(_ taskId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-    let identifiers = [taskId, AlarmContent.snoozePrefix + taskId]
+    let identifiers = AlarmContent.identifiers(for: taskId) + [AlarmContent.snoozePrefix + taskId]
     let center = UNUserNotificationCenter.current()
     center.removePendingNotificationRequests(withIdentifiers: identifiers)
     center.removeDeliveredNotifications(withIdentifiers: identifiers)
@@ -149,7 +167,7 @@ final class IrantiAlarm: RCTEventEmitter {
 
   @objc(dismiss:resolver:rejecter:)
   func dismiss(_ taskId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [taskId, AlarmContent.snoozePrefix + taskId])
+    UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: AlarmContent.identifiers(for: taskId) + [AlarmContent.snoozePrefix + taskId])
     resolve(nil)
   }
 

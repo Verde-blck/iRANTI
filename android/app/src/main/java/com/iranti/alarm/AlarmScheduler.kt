@@ -31,11 +31,26 @@ class AlarmScheduler(context: Context) {
   fun records(): List<AlarmRecord> = store.all()
 
   fun restoreAll() {
-    val horizon = System.currentTimeMillis() - AlarmContract.MISSED_GRACE_MS
+    val now = System.currentTimeMillis()
+    val horizon = now - AlarmContract.MISSED_GRACE_MS
     store.all().forEach { record ->
-      if (record.fireAt >= horizon) arm(record) else store.remove(record.id)
+      when {
+        record.fireAt >= horizon -> arm(record)
+        isRepeating(record) -> scheduleNextOccurrence(record, now)
+        else -> store.remove(record.id)
+      }
     }
   }
+
+  fun scheduleNextOccurrence(record: AlarmRecord, now: Long = System.currentTimeMillis()) {
+    if (!isRepeating(record)) return
+    val kind = record.repeat ?: return
+    val next = Recurrence.next(kind, record.repeatAnchor, maxOf(now, record.fireAt)) ?: return
+    schedule(record.copy(fireAt = next))
+  }
+
+  private fun isRepeating(record: AlarmRecord): Boolean =
+    record.repeat != null && !record.id.startsWith(AlarmContract.SNOOZE_PREFIX)
 
   @SuppressLint("ScheduleExactAlarm", "MissingPermission")
   private fun arm(record: AlarmRecord) {

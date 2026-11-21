@@ -12,7 +12,7 @@ import type { DeliveryMode, Task } from '../types/task';
 import { evaluateLicense } from './licenseEngine';
 import { canDeepWakeAt } from './licenseMath';
 import { openPaywall } from './paywall';
-import { applyDeliveries, taskStore } from './taskRepository';
+import { advanceOverdueRepeats, applyDeliveries, taskStore } from './taskRepository';
 
 export type ReadinessIssue = keyof AlarmCapabilities;
 
@@ -46,6 +46,8 @@ function toNative(task: ArmedTask, deepWake: boolean): NativeAlarm {
     fireAt: task.remindAt,
     priority: task.priority,
     deepWake,
+    repeat: task.repeat?.kind ?? null,
+    repeatAnchor: task.repeat?.anchor ?? null,
   };
 }
 
@@ -122,6 +124,7 @@ async function runResync(): Promise<void> {
   reminderStore.set(state => ({ ...state, syncing: true }));
   try {
     const now = Date.now();
+    advanceOverdueRepeats(now);
     const license = await evaluateLicense();
     const tasks = taskStore.get();
     const armable = tasks
@@ -132,7 +135,7 @@ async function runResync(): Promise<void> {
     const scheduled = await AlarmBridge.scheduledIds();
     await Promise.all(
       scheduled
-        .filter(id => !id.startsWith(SNOOZE_PREFIX) && !keep.has(id))
+        .filter(id => !id.startsWith(SNOOZE_PREFIX) && !keep.has(id.split('#')[0]))
         .map(id => AlarmBridge.cancel(id)),
     );
     const deliveries = new Map<string, DeliveryMode | null>();

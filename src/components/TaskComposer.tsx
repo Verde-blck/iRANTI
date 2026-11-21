@@ -15,12 +15,13 @@ import { useTasks } from '../hooks/useTasks';
 import { strings } from '../i18n/strings';
 import { isTaskValidationError } from '../services/taskRepository';
 import { palette } from '../theme/palette';
-import type { Priority, Subtask, Task, TaskPatch } from '../types/task';
+import type { Priority, Repeat, RepeatKind, Subtask, Task, TaskPatch } from '../types/task';
 import { ChecklistEditor } from './ChecklistEditor';
 import { ListPicker } from './ListPicker';
 import { NeonButton } from './NeonButton';
 import { PriorityPicker } from './PriorityPicker';
 import { ReminderPicker } from './ReminderPicker';
+import { RepeatPicker } from './RepeatPicker';
 
 interface TaskComposerProps {
   visible: boolean;
@@ -48,6 +49,10 @@ function sameSubtasks(a: readonly Subtask[], b: readonly Subtask[]): boolean {
   );
 }
 
+function sameRepeat(a: Repeat | null, b: Repeat | null): boolean {
+  return a === b || (a !== null && b !== null && a.kind === b.kind && a.anchor === b.anchor);
+}
+
 export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComposerProps) {
   const insets = useSafeAreaInsets();
   const { create, update, remove } = useTasks();
@@ -58,6 +63,7 @@ export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComp
   const [remindAt, setRemindAt] = useState<number | null>(null);
   const [listId, setListId] = useState(INBOX_LIST_ID);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [repeatKind, setRepeatKind] = useState<RepeatKind | null>(null);
   const [focused, setFocused] = useState<'title' | 'notes' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<'save' | 'delete' | null>(null);
@@ -73,9 +79,20 @@ export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComp
     setRemindAt(task?.remindAt ?? null);
     setListId(findList(initialList) ? initialList : INBOX_LIST_ID);
     setSubtasks(task?.subtasks ?? []);
+    setRepeatKind(task?.repeat?.kind ?? null);
     setError(null);
     setBusy(null);
   }, [visible, task, defaultListId, findList]);
+
+  const resolveRepeat = (current: Task | null): Repeat | null => {
+    if (repeatKind === null || remindAt === null) {
+      return null;
+    }
+    if (current?.repeat && current.repeat.kind === repeatKind && current.remindAt === remindAt) {
+      return current.repeat;
+    }
+    return { kind: repeatKind, anchor: remindAt };
+  };
 
   const submit = async () => {
     setBusy('save');
@@ -101,9 +118,21 @@ export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComp
         if (!sameSubtasks(subtasks, task.subtasks)) {
           patch.subtasks = subtasks;
         }
+        const repeat = resolveRepeat(task);
+        if (!sameRepeat(repeat, task.repeat)) {
+          patch.repeat = repeat;
+        }
         await update(task.id, patch);
       } else {
-        await create({ title, notes, priority, remindAt, listId, subtasks });
+        await create({
+          title,
+          notes,
+          priority,
+          remindAt,
+          listId,
+          subtasks,
+          repeat: resolveRepeat(null),
+        });
       }
       onClose();
     } catch (cause) {
@@ -206,6 +235,12 @@ export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComp
             <Field label={strings.composer.reminderLabel}>
               <ReminderPicker value={remindAt} onChange={setRemindAt} />
             </Field>
+
+            {remindAt !== null ? (
+              <Field label={strings.repeat.label}>
+                <RepeatPicker value={repeatKind} onChange={setRepeatKind} />
+              </Field>
+            ) : null}
 
             {error ? (
               <Text accessibilityLiveRegion="polite" className="mt-5 text-[15px] text-flare">

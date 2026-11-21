@@ -8,6 +8,8 @@ import {
   markCompleted,
   patchTask,
   removeCompletedRecords,
+  advanceRepeat,
+  findTask as findTaskRecord,
   removeTaskRecord,
   toggleSubtaskRecord,
 } from './taskRepository';
@@ -44,6 +46,14 @@ export async function editTask(id: string, patch: TaskPatch): Promise<Task | nul
 }
 
 export async function setTaskCompleted(id: string, completed: boolean): Promise<Task | null> {
+  const existing = findTaskRecord(id);
+  if (completed && existing?.repeat && existing.remindAt !== null) {
+    const advanced = advanceRepeat(id, Date.now());
+    if (advanced) {
+      await scheduleTask(advanced, 'sync');
+    }
+    return findTaskRecord(id) ?? advanced;
+  }
   const task = markCompleted(id, completed);
   if (!task) {
     return null;

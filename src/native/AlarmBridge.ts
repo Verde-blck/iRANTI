@@ -1,5 +1,5 @@
 import { NativeEventEmitter, NativeModules, PermissionsAndroid, Platform } from 'react-native';
-import type { Priority } from '../types/task';
+import type { Priority, RepeatKind } from '../types/task';
 
 export interface NativeAlarm {
   id: string;
@@ -8,6 +8,8 @@ export interface NativeAlarm {
   fireAt: number;
   priority: Priority;
   deepWake: boolean;
+  repeat: RepeatKind | null;
+  repeatAnchor: number | null;
 }
 
 export interface AlarmCapabilities {
