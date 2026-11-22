@@ -1,6 +1,8 @@
 import { TRIAL_DAYS } from '../config/constants';
 import type { Priority, RepeatKind } from '../types/task';
 
+const count = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
 const en = {
   brand: 'iRANTI',
   header: {
@@ -66,6 +68,37 @@ const en = {
       name_taken: 'You already have a list with that name.',
       limit_reached: 'You have reached the limit of 30 lists.',
       generic: 'The list did not save. Try again.',
+    },
+  },
+  backup: {
+    open: 'Backup',
+    title: 'Backup',
+    intro:
+      'Save all your tasks and lists to a file, for example in Google Drive, so you can restore them on this phone or a new one.',
+    lastSaved: (when: string) => `Last backup: ${when}`,
+    never: 'No backup saved yet.',
+    save: 'Save a backup',
+    restore: 'Restore from a backup',
+    restoreNote:
+      'Restoring keeps the tasks already on this phone. Any task that is also in the backup is replaced by the backup’s version.',
+    close: 'Close',
+    saved: 'Backup saved.',
+    restored: (tasks: number, lists: number) =>
+      `Restored ${count(tasks, 'task')} and ${count(lists, 'list')}.`,
+    confirmTitle: 'Restore this backup?',
+    confirmBody: (tasks: number, lists: number, when: string | null) =>
+      `It contains ${count(tasks, 'task')} and ${count(lists, 'list')}${
+        when ? `, saved ${when}` : ''
+      }.`,
+    confirm: 'Restore',
+    cancel: 'Cancel',
+    errors: {
+      not_json: 'That file isn’t an iRANTI backup.',
+      not_iranti: 'That file isn’t an iRANTI backup.',
+      newer_format:
+        'This backup was made by a newer version of iRANTI. Update the app, then try again.',
+      too_large: 'That file is too large to be an iRANTI backup.',
+      failed: 'That didn’t work. Try again.',
     },
   },
   search: {

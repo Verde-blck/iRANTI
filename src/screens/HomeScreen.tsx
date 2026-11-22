@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, View, type ListRenderItem } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BackupSheet } from '../components/BackupSheet';
 import { EmptyState, type EmptyVariant } from '../components/EmptyState';
 import { Fab } from '../components/Fab';
 import { Header } from '../components/Header';
@@ -40,6 +41,7 @@ export function HomeScreen() {
   const [query, setQuery] = useState('');
   const [editor, setEditor] = useState<EditorState>({ visible: false, task: null });
   const [listEditor, setListEditor] = useState<ListEditorState>({ visible: false, list: null });
+  const [backupVisible, setBackupVisible] = useState(false);
 
   const current: ListSelection = selection === 'all' || find(selection) ? selection : 'all';
   const visibleActive = useMemo(
@@ -116,7 +118,7 @@ export function HomeScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         ListHeaderComponent={
           <>
-            <Header />
+            <Header onOpenBackup={() => setBackupVisible(true)} />
             <View className="px-5">
               <NextUpCard tasks={active} />
               <ReadinessPanel />
@@ -151,6 +153,7 @@ export function HomeScreen() {
         defaultListId={current === 'all' ? INBOX_LIST_ID : current}
         onClose={closeEditor}
       />
+      <BackupSheet visible={backupVisible} onClose={() => setBackupVisible(false)} />
       <ListEditor
         visible={listEditor.visible}
         list={listEditor.list}

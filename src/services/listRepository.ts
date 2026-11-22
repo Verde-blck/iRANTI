@@ -44,18 +44,25 @@ function isList(value: unknown): value is TaskList {
   return typeof candidate.id === 'string' && typeof candidate.name === 'string';
 }
 
+export function sanitiseLists(raw: unknown[]): TaskList[] {
+  return raw.filter(isList).map(list => ({
+    id: list.id,
+    name: list.name.trim().slice(0, LIST_NAME_LIMIT) || strings.lists.inbox,
+    createdAt: typeof list.createdAt === 'number' ? list.createdAt : 0,
+  }));
+}
+
+export function importListRecords(lists: TaskList[]): void {
+  const withInbox = lists.some(list => list.id === INBOX_LIST_ID) ? lists : [inbox(), ...lists];
+  commit(withInbox);
+}
+
 export function ensureListsHydrated(): void {
   if (hydrated) {
     return;
   }
   const stored = readJson<unknown[]>(StorageKeys.lists);
-  const lists = Array.isArray(stored)
-    ? stored.filter(isList).map(list => ({
-        id: list.id,
-        name: list.name,
-        createdAt: typeof list.createdAt === 'number' ? list.createdAt : 0,
-      }))
-    : [];
+  const lists = Array.isArray(stored) ? sanitiseLists(stored) : [];
   const withInbox = lists.some(list => list.id === INBOX_LIST_ID) ? lists : [inbox(), ...lists];
   listStore.set(withInbox);
   hydrated = true;

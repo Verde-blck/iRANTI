@@ -116,6 +116,14 @@ function normalise(task: Task): Task {
   };
 }
 
+export function sanitiseTasks(raw: unknown[]): Task[] {
+  return raw.filter(isTask).map(normalise);
+}
+
+export function importTaskRecords(tasks: Task[]): void {
+  commit(tasks);
+}
+
 export function ensureTasksHydrated(): void {
   if (hydrated) {
     return;

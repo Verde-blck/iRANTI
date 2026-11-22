@@ -10,11 +10,13 @@
 		0C80B921A6F3F58F76C31292 /* libPods-Iranti.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-Iranti.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		27D84CF0806504F9B11EBCAA /* IrantiAlarm.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCB456094BCCD66103D802E /* IrantiAlarm.m */; };
+		5B7342C3BCBAFF17FF4D543F /* IrantiBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D9453FABB5E7925D33409A /* IrantiBackup.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7BAA46769CDA661B0DFDCB97 /* EntitlementLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A147A8AFECE77600D91BFE /* EntitlementLedger.swift */; };
 		7D484D69B3DE81F7ECD057FB /* iranti_alarm.wav in Resources */ = {isa = PBXBuildFile; fileRef = 539441D5BED10DFD504E4277 /* iranti_alarm.wav */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		94DC4ECB84A74AD7D296DE03 /* IrantiSecureVault.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FF84232B3DD0204DB3EED05 /* IrantiSecureVault.m */; };
+		A36C4C14979E0EE0DD56EE15 /* IrantiBackup.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CE743CB91AF912102FB9B1F /* IrantiBackup.m */; };
 		C3D74045B5A7A311EEB7CC97 /* IrantiNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C84CC4AF533EC324DD08A3 /* IrantiNotificationCenter.swift */; };
 		D432470C9134C45DF4EC9C8B /* IrantiAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFDF4BBFBB993B6A0954821E /* IrantiAlarm.swift */; };
 		DC334077A46BA82715DFA64D /* DeviceSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362546FC9EFDD1457B9A385C /* DeviceSigner.swift */; };
@@ -39,6 +41,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Iranti/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Iranti/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Iranti/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		17D9453FABB5E7925D33409A /* IrantiBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IrantiBackup.swift; path = Iranti/IrantiBackup.swift; sourceTree = SOURCE_ROOT; };
 		2BCB456094BCCD66103D802E /* IrantiAlarm.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = IrantiAlarm.m; path = Iranti/IrantiAlarm.m; sourceTree = SOURCE_ROOT; };
 		362546FC9EFDD1457B9A385C /* DeviceSigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeviceSigner.swift; path = Iranti/DeviceSigner.swift; sourceTree = SOURCE_ROOT; };
 		3B4392A12AC88292D35C810B /* Pods-Iranti.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Iranti.debug.xcconfig"; path = "Target Support Files/Pods-Iranti/Pods-Iranti.debug.xcconfig"; sourceTree = "<group>"; };
@@ -50,6 +53,7 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Iranti/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Iranti/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8B6D4E1EA9C0C01D94842D5B /* Iranti.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Iranti.entitlements; path = Iranti/Iranti.entitlements; sourceTree = SOURCE_ROOT; };
+		9CE743CB91AF912102FB9B1F /* IrantiBackup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = IrantiBackup.m; path = Iranti/IrantiBackup.m; sourceTree = SOURCE_ROOT; };
 		BFDF4BBFBB993B6A0954821E /* IrantiAlarm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IrantiAlarm.swift; path = Iranti/IrantiAlarm.swift; sourceTree = SOURCE_ROOT; };
 		D0A147A8AFECE77600D91BFE /* EntitlementLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EntitlementLedger.swift; path = Iranti/EntitlementLedger.swift; sourceTree = SOURCE_ROOT; };
 		D62D4E7C941F587CE3F6D89F /* IrantiSecureVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IrantiSecureVault.swift; path = Iranti/IrantiSecureVault.swift; sourceTree = SOURCE_ROOT; };
@@ -94,6 +98,8 @@
 				0FF84232B3DD0204DB3EED05 /* IrantiSecureVault.m */,
 				539441D5BED10DFD504E4277 /* iranti_alarm.wav */,
 				8B6D4E1EA9C0C01D94842D5B /* Iranti.entitlements */,
+				17D9453FABB5E7925D33409A /* IrantiBackup.swift */,
+				9CE743CB91AF912102FB9B1F /* IrantiBackup.m */,
 			);
 			name = Iranti;
 			sourceTree = "<group>";
@@ -309,6 +315,8 @@
 				27D84CF0806504F9B11EBCAA /* IrantiAlarm.m in Sources */,
 				F68D41769FBCD0B0CC9D56EF /* IrantiSecureVault.swift in Sources */,
 				94DC4ECB84A74AD7D296DE03 /* IrantiSecureVault.m in Sources */,
+				5B7342C3BCBAFF17FF4D543F /* IrantiBackup.swift in Sources */,
+				A36C4C14979E0EE0DD56EE15 /* IrantiBackup.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
