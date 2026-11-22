@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Share, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { INBOX_LIST_ID, LIST_NAME_LIMIT } from '../config/constants';
+import { identity, useStore } from '../core/store';
 import { useLists } from '../hooks/useLists';
 import { strings } from '../i18n/strings';
+import { accountStore } from '../services/accountService';
 import { isListValidationError } from '../services/listRepository';
+import { SharingError, shareList } from '../services/sharedActions';
+import { spaceListId } from '../services/sharedStore';
 import { palette } from '../theme/palette';
 import type { TaskList } from '../types/list';
 import { NeonButton } from './NeonButton';
@@ -15,10 +19,20 @@ interface ListEditorProps {
   onClose: () => void;
   onSaved: (list: TaskList) => void;
   onDeleted: (listId: string) => void;
+  onShared: (listId: string) => void;
 }
 
-export function ListEditor({ visible, list, onClose, onSaved, onDeleted }: ListEditorProps) {
+export function ListEditor({
+  visible,
+  list,
+  onClose,
+  onSaved,
+  onDeleted,
+  onShared,
+}: ListEditorProps) {
   const insets = useSafeAreaInsets();
+  const account = useStore(accountStore, identity);
+  const [sharing, setSharing] = useState(false);
   const { create, rename, remove } = useLists();
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -110,6 +124,34 @@ export function ListEditor({ visible, list, onClose, onSaved, onDeleted }: ListE
               variant="solid"
               onPress={save}
             />
+            {list && !isInbox && account.status === 'signedIn' ? (
+              <NeonButton
+                label={strings.sharing.shareList}
+                variant="outline"
+                busy={sharing}
+                onPress={async () => {
+                  setSharing(true);
+                  setError(null);
+                  try {
+                    const result = await shareList(list.id);
+                    onShared(spaceListId(result.spaceId));
+                    onClose();
+                    await Share.share({
+                      message: strings.sharing.inviteList(result.name, result.code),
+                    });
+                  } catch (cause) {
+                    setError(
+                      strings.sharing.errors[cause instanceof SharingError ? cause.code : 'failed'],
+                    );
+                  } finally {
+                    setSharing(false);
+                  }
+                }}
+              />
+            ) : null}
+            {list && !isInbox && account.status !== 'signedIn' ? (
+              <Text className="text-[13px] text-mist">{strings.sharing.signInFirst}</Text>
+            ) : null}
             {list && !isInbox ? (
               <NeonButton label={strings.lists.delete} variant="danger" onPress={destroy} />
             ) : null}

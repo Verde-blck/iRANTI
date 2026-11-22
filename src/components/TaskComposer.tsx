@@ -4,15 +4,20 @@ import {
   Modal,
   Platform,
   ScrollView,
+  Share,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { identity, useStore } from '../core/store';
 import { INBOX_LIST_ID, NOTES_LIMIT, TITLE_LIMIT } from '../config/constants';
 import { useLists } from '../hooks/useLists';
 import { useTasks } from '../hooks/useTasks';
 import { strings } from '../i18n/strings';
+import { accountStore } from '../services/accountService';
+import { SharingError, shareTask } from '../services/sharedActions';
+import { SHARED_TASKS_LIST_ID, parseSharedTaskId } from '../services/sharedStore';
 import { isTaskValidationError } from '../services/taskRepository';
 import { palette } from '../theme/palette';
 import type { Priority, Repeat, RepeatKind, Subtask, Task, TaskPatch } from '../types/task';
@@ -22,6 +27,7 @@ import { NeonButton } from './NeonButton';
 import { PriorityPicker } from './PriorityPicker';
 import { ReminderPicker } from './ReminderPicker';
 import { RepeatPicker } from './RepeatPicker';
+import { SharingPanel } from './SharingPanel';
 
 interface TaskComposerProps {
   visible: boolean;
@@ -57,6 +63,11 @@ export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComp
   const insets = useSafeAreaInsets();
   const { create, update, remove } = useTasks();
   const { lists, find: findList } = useLists();
+  const account = useStore(accountStore, identity);
+  const [sharing, setSharing] = useState(false);
+  const sharedRef = task ? parseSharedTaskId(task.id) : null;
+  const sharedSingle = task?.listId === SHARED_TASKS_LIST_ID;
+  const pickerLists = lists.filter(list => list.id !== SHARED_TASKS_LIST_ID);
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<Priority>('normal');
@@ -225,7 +236,11 @@ export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComp
             </Field>
 
             <Field label={strings.composer.listLabel}>
-              <ListPicker lists={lists} value={listId} onChange={setListId} />
+              {sharedSingle ? (
+                <Text className="text-[15px] text-ink">{strings.sharing.sharedTasks}</Text>
+              ) : (
+                <ListPicker lists={pickerLists} value={listId} onChange={setListId} />
+              )}
             </Field>
 
             <Field label={strings.composer.priorityLabel}>
@@ -240,6 +255,45 @@ export function TaskComposer({ visible, task, defaultListId, onClose }: TaskComp
               <Field label={strings.repeat.label}>
                 <RepeatPicker value={repeatKind} onChange={setRepeatKind} />
               </Field>
+            ) : null}
+
+            {task && sharedRef && sharedSingle ? (
+              <Field label={strings.sharing.sharedWith}>
+                <SharingPanel spaceId={sharedRef.spaceId} onRemoved={onClose} />
+              </Field>
+            ) : null}
+
+            {task && !sharedRef ? (
+              <View className="mt-6">
+                {account.status === 'signedIn' ? (
+                  <NeonButton
+                    label={strings.sharing.shareTask}
+                    variant="outline"
+                    busy={sharing}
+                    onPress={async () => {
+                      setSharing(true);
+                      setError(null);
+                      try {
+                        const result = await shareTask(task.id);
+                        onClose();
+                        await Share.share({
+                          message: strings.sharing.inviteTask(result.name, result.code),
+                        });
+                      } catch (cause) {
+                        setError(
+                          strings.sharing.errors[
+                            cause instanceof SharingError ? cause.code : 'failed'
+                          ],
+                        );
+                      } finally {
+                        setSharing(false);
+                      }
+                    }}
+                  />
+                ) : (
+                  <Text className="text-[13px] text-mist">{strings.sharing.signInFirst}</Text>
+                )}
+              </View>
             ) : null}
 
             {error ? (

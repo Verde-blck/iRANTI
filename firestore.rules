@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function spaceDoc(spaceId) {
+      return get(/databases/$(database)/documents/spaces/$(spaceId));
+    }
+
+    function isMember(spaceId) {
+      return signedIn() && request.auth.uid in spaceDoc(spaceId).data.members;
+    }
+
+    match /users/{userId} {
+      allow read, write: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /spaces/{spaceId} {
+      function joining() {
+        let code = request.resource.data.joinCode;
+        return !(request.auth.uid in resource.data.members)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'memberNames', 'joinCode', 'updatedAt'])
+          && request.resource.data.members.toSet() == resource.data.members.toSet().union([request.auth.uid].toSet())
+          && code is string
+          && exists(/databases/$(database)/documents/invites/$(code))
+          && get(/databases/$(database)/documents/invites/$(code)).data.spaceId == spaceId;
+      }
+
+      function memberEdit() {
+        return request.auth.uid in resource.data.members
+          && (request.resource.data.ownerId == resource.data.ownerId
+            || (resource.data.ownerId == request.auth.uid && request.resource.data.ownerId in request.resource.data.members));
+      }
+
+      allow read: if signedIn() && request.auth.uid in resource.data.members;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.members == [request.auth.uid];
+      allow update: if signedIn() && (memberEdit() || joining());
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+
+      match /tasks/{taskId} {
+        allow read, write: if isMember(spaceId);
+      }
+    }
+
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list, update: if false;
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && isMember(request.resource.data.spaceId);
+      allow delete: if signedIn() && isMember(resource.data.spaceId);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

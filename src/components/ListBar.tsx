@@ -36,6 +36,7 @@ export function ListBar({ lists, selected, counts, onSelect, onEdit, onCreate }:
           accessibilityHint={strings.lists.holdHint}
           onPress={() => onSelect(list.id)}
           onLongPress={() => onEdit(list)}
+          badge={list.shared ? strings.sharing.badge : undefined}
         />
       ))}
       <Chip label={`+ ${strings.lists.newList}`} onPress={onCreate} />

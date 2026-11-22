@@ -9,7 +9,7 @@ import { useNow } from '../hooks/useNow';
 import { usePulse } from '../hooks/usePulse';
 import { strings } from '../i18n/strings';
 import { AlarmBridge } from '../native/AlarmBridge';
-import { setTaskCompleted } from '../services/taskActions';
+import { routeSetCompleted as setTaskCompleted } from '../services/taskRouter';
 import { glow } from '../theme/glow';
 import { PRIORITIES, type Priority } from '../types/task';
 import { formatClock, formatDay } from '../utils/time';

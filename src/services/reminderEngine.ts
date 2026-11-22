@@ -12,6 +12,9 @@ import type { DeliveryMode, Task } from '../types/task';
 import { evaluateLicense } from './licenseEngine';
 import { canDeepWakeAt } from './licenseMath';
 import { openPaywall } from './paywall';
+import { nextOccurrence } from '../utils/recurrence';
+import { advanceSharedRepeat } from './sharedActions';
+import { parseSharedTaskId, sharedAppTasks, sharedStore } from './sharedStore';
 import { advanceOverdueRepeats, applyDeliveries, taskStore } from './taskRepository';
 
 export type ReadinessIssue = keyof AlarmCapabilities;
@@ -126,7 +129,19 @@ async function runResync(): Promise<void> {
     const now = Date.now();
     advanceOverdueRepeats(now);
     const license = await evaluateLicense();
-    const tasks = taskStore.get();
+    const sharedTasks = sharedAppTasks(sharedStore.get()).map(task => {
+      const overdueRepeat =
+        task.repeat && !task.completed && task.remindAt !== null && task.remindAt <= now;
+      if (!overdueRepeat || !task.repeat) {
+        return task;
+      }
+      const ref = parseSharedTaskId(task.id);
+      if (ref) {
+        advanceSharedRepeat(ref.spaceId, ref.taskId, now).catch(() => undefined);
+      }
+      return { ...task, remindAt: nextOccurrence(task.repeat, now) };
+    });
+    const tasks = [...taskStore.get(), ...sharedTasks];
     const armable = tasks
       .filter((task): task is ArmedTask => isArmable(task, now))
       .sort((a, b) => a.remindAt - b.remindAt);

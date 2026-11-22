@@ -328,3 +328,38 @@ export function removeCompletedRecords(onlyIds?: readonly string[]): string[] {
   }
   return removed;
 }
+
+export function buildTask(draft: TaskDraft, id: string, now: number = Date.now()): Task {
+  const remindAt = cleanReminder(draft.remindAt, now);
+  return {
+    id,
+    title: cleanTitle(draft.title),
+    notes: cleanNotes(draft.notes),
+    priority: draft.priority ?? 'normal',
+    remindAt,
+    completed: false,
+    completedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    delivery: null,
+    listId: draft.listId || INBOX_LIST_ID,
+    subtasks: cleanSubtasks(draft.subtasks),
+    repeat: cleanRepeat(draft.repeat, remindAt),
+  };
+}
+
+export function applyTaskPatch(current: Task, patch: TaskPatch, now: number = Date.now()): Task {
+  const reminderChanged = patch.remindAt !== undefined && patch.remindAt !== current.remindAt;
+  const remindAt = reminderChanged ? cleanReminder(patch.remindAt, now) : current.remindAt;
+  return {
+    ...current,
+    title: patch.title !== undefined ? cleanTitle(patch.title) : current.title,
+    notes: patch.notes !== undefined ? cleanNotes(patch.notes) : current.notes,
+    priority: patch.priority ?? current.priority,
+    remindAt,
+    listId: patch.listId || current.listId,
+    subtasks: patch.subtasks !== undefined ? cleanSubtasks(patch.subtasks) : current.subtasks,
+    repeat: cleanRepeat(patch.repeat !== undefined ? patch.repeat : current.repeat, remindAt),
+    updatedAt: now,
+  };
+}

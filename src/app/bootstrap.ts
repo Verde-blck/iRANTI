@@ -1,7 +1,10 @@
+import { startAccount } from '../services/accountService';
 import { evaluateLicense } from '../services/licenseEngine';
 import { initPurchases } from '../services/purchaseService';
 import { refreshCapabilities, resyncAll } from '../services/reminderEngine';
 import { ensureListsHydrated } from '../services/listRepository';
+import { hydrateSharedCache } from '../services/sharedStore';
+import { startSharedSync } from '../services/sharedSync';
 import { ensureTasksHydrated } from '../services/taskRepository';
 import { openVault } from '../storage/vault';
 
@@ -13,6 +16,7 @@ export function ensureCore(): Promise<void> {
       await openVault();
       ensureListsHydrated();
       ensureTasksHydrated();
+      hydrateSharedCache();
       await evaluateLicense();
     })().catch(error => {
       core = null;
@@ -27,4 +31,10 @@ export async function bootstrap(): Promise<void> {
   await refreshCapabilities().catch(() => undefined);
   await resyncAll().catch(() => undefined);
   initPurchases().catch(() => undefined);
+  try {
+    startAccount();
+    startSharedSync();
+  } catch {
+    return;
+  }
 }

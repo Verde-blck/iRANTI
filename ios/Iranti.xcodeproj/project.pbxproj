@@ -11,6 +11,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		27D84CF0806504F9B11EBCAA /* IrantiAlarm.m in Sources */ = {isa = PBXBuildFile; fileRef = 2BCB456094BCCD66103D802E /* IrantiAlarm.m */; };
 		5B7342C3BCBAFF17FF4D543F /* IrantiBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D9453FABB5E7925D33409A /* IrantiBackup.swift */; };
+		6D09491EB580F43EDC85DDEA /* IrantiGoogleSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6314443494C6729555734112 /* IrantiGoogleSignIn.swift */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7BAA46769CDA661B0DFDCB97 /* EntitlementLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A147A8AFECE77600D91BFE /* EntitlementLedger.swift */; };
 		7D484D69B3DE81F7ECD057FB /* iranti_alarm.wav in Resources */ = {isa = PBXBuildFile; fileRef = 539441D5BED10DFD504E4277 /* iranti_alarm.wav */; };
@@ -18,6 +19,7 @@
 		94DC4ECB84A74AD7D296DE03 /* IrantiSecureVault.m in Sources */ = {isa = PBXBuildFile; fileRef = 0FF84232B3DD0204DB3EED05 /* IrantiSecureVault.m */; };
 		A36C4C14979E0EE0DD56EE15 /* IrantiBackup.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CE743CB91AF912102FB9B1F /* IrantiBackup.m */; };
 		C3D74045B5A7A311EEB7CC97 /* IrantiNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C84CC4AF533EC324DD08A3 /* IrantiNotificationCenter.swift */; };
+		C5174B8797A173C2D4D3F30B /* IrantiGoogleSignIn.m in Sources */ = {isa = PBXBuildFile; fileRef = EE1043F8AD71D47BE1008DFE /* IrantiGoogleSignIn.m */; };
 		D432470C9134C45DF4EC9C8B /* IrantiAlarm.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFDF4BBFBB993B6A0954821E /* IrantiAlarm.swift */; };
 		DC334077A46BA82715DFA64D /* DeviceSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362546FC9EFDD1457B9A385C /* DeviceSigner.swift */; };
 		EE934B24810F8A34FEE0C35C /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669A4807A5D090FD4D4776CA /* KeychainStore.swift */; };
@@ -49,6 +51,7 @@
 		5709B34CF0A7D63546082F79 /* Pods-Iranti.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Iranti.release.xcconfig"; path = "Target Support Files/Pods-Iranti/Pods-Iranti.release.xcconfig"; sourceTree = "<group>"; };
 		57C84CC4AF533EC324DD08A3 /* IrantiNotificationCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IrantiNotificationCenter.swift; path = Iranti/IrantiNotificationCenter.swift; sourceTree = SOURCE_ROOT; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-Iranti.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Iranti.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6314443494C6729555734112 /* IrantiGoogleSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IrantiGoogleSignIn.swift; path = Iranti/IrantiGoogleSignIn.swift; sourceTree = SOURCE_ROOT; };
 		669A4807A5D090FD4D4776CA /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeychainStore.swift; path = Iranti/KeychainStore.swift; sourceTree = SOURCE_ROOT; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Iranti/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Iranti/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -58,6 +61,7 @@
 		D0A147A8AFECE77600D91BFE /* EntitlementLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EntitlementLedger.swift; path = Iranti/EntitlementLedger.swift; sourceTree = SOURCE_ROOT; };
 		D62D4E7C941F587CE3F6D89F /* IrantiSecureVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IrantiSecureVault.swift; path = Iranti/IrantiSecureVault.swift; sourceTree = SOURCE_ROOT; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		EE1043F8AD71D47BE1008DFE /* IrantiGoogleSignIn.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = IrantiGoogleSignIn.m; path = Iranti/IrantiGoogleSignIn.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +104,8 @@
 				8B6D4E1EA9C0C01D94842D5B /* Iranti.entitlements */,
 				17D9453FABB5E7925D33409A /* IrantiBackup.swift */,
 				9CE743CB91AF912102FB9B1F /* IrantiBackup.m */,
+				6314443494C6729555734112 /* IrantiGoogleSignIn.swift */,
+				EE1043F8AD71D47BE1008DFE /* IrantiGoogleSignIn.m */,
 			);
 			name = Iranti;
 			sourceTree = "<group>";
@@ -317,6 +323,8 @@
 				94DC4ECB84A74AD7D296DE03 /* IrantiSecureVault.m in Sources */,
 				5B7342C3BCBAFF17FF4D543F /* IrantiBackup.swift in Sources */,
 				A36C4C14979E0EE0DD56EE15 /* IrantiBackup.m in Sources */,
+				6D09491EB580F43EDC85DDEA /* IrantiGoogleSignIn.swift in Sources */,
+				C5174B8797A173C2D4D3F30B /* IrantiGoogleSignIn.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

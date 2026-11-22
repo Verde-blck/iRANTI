@@ -1,20 +1,26 @@
 import { useMemo } from 'react';
 import { identity, useStore } from '../core/store';
+import { sharedAppTasks, sharedStore } from '../services/sharedStore';
 import {
-  clearCompleted,
-  createTask,
-  deleteTask,
-  editTask,
-  setTaskCompleted,
-  toggleSubtask,
-  toggleTask,
-} from '../services/taskActions';
-import { findTask, taskStore } from '../services/taskRepository';
+  findAnyTask,
+  routeClearCompleted,
+  routeCreate,
+  routeRemove,
+  routeSetCompleted,
+  routeToggle,
+  routeToggleSubtask,
+  routeUpdate,
+} from '../services/taskRouter';
+import { taskStore } from '../services/taskRepository';
 import { compareTasks } from '../utils/taskOrder';
 
 export function useTasks() {
-  const tasks = useStore(taskStore, identity);
-  const ordered = useMemo(() => [...tasks].sort(compareTasks), [tasks]);
+  const local = useStore(taskStore, identity);
+  const shared = useStore(sharedStore, identity);
+  const ordered = useMemo(
+    () => [...local, ...sharedAppTasks(shared)].sort(compareTasks),
+    [local, shared],
+  );
   const active = useMemo(() => ordered.filter(task => !task.completed), [ordered]);
   const done = useMemo(() => ordered.filter(task => task.completed), [ordered]);
 
@@ -23,14 +29,14 @@ export function useTasks() {
       tasks: ordered,
       active,
       done,
-      find: findTask,
-      create: createTask,
-      update: editTask,
-      toggle: toggleTask,
-      toggleSubtask,
-      setCompleted: setTaskCompleted,
-      remove: deleteTask,
-      clearCompleted,
+      find: findAnyTask,
+      create: routeCreate,
+      update: routeUpdate,
+      toggle: routeToggle,
+      toggleSubtask: routeToggleSubtask,
+      setCompleted: routeSetCompleted,
+      remove: routeRemove,
+      clearCompleted: routeClearCompleted,
     }),
     [ordered, active, done],
   );

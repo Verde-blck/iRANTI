@@ -1,7 +1,7 @@
 import type { LaunchAction } from '../native/AlarmBridge';
 import { licenseStore } from '../services/licenseEngine';
 import { openPaywall } from '../services/paywall';
-import { setTaskCompleted } from '../services/taskActions';
+import { routeSetCompleted as setTaskCompleted } from '../services/taskRouter';
 
 export async function routeLaunchAction(action: LaunchAction): Promise<void> {
   if (action.type === 'paywall') {
