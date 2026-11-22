@@ -4,13 +4,14 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
+import com.iranti.account.IrantiGoogleSignInModule
 import com.iranti.alarm.IrantiAlarmModule
 import com.iranti.backup.IrantiBackupModule
 import com.iranti.security.IrantiSecureVaultModule
 
 class IrantiPackage : ReactPackage {
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
-    listOf(IrantiAlarmModule(reactContext), IrantiSecureVaultModule(reactContext), IrantiBackupModule(reactContext))
+    listOf(IrantiAlarmModule(reactContext), IrantiSecureVaultModule(reactContext), IrantiBackupModule(reactContext), IrantiGoogleSignInModule(reactContext))
 
   override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> = emptyList()
 }
